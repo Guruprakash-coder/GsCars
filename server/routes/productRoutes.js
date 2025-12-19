@@ -2,6 +2,10 @@ const express = require('express');
 const Product = require('../models/product'); // We import the blueprint we just made
 
 const router = express.Router();
+// TEST ROUTE (No Database)
+router.get('/test', (req, res) => {
+  res.json({ message: "API connection is working!" });
+});
 
 // 1. ADD A NEW PRODUCT (For Admin)
 // The frontend will send a POST request to this address
