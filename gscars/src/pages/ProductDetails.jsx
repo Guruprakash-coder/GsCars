@@ -58,7 +58,7 @@ const ProductDetails = () => {
             <img 
               src={product.image} 
               alt={product.name} 
-              className="max-h-[400px] w-auto object-contain drop-shadow-2xl hover:scale-105 transition duration-500" 
+              className="w-full md:max-h-[400px] md:w-auto object-contain drop-shadow-2xl"
             />
             
             {/* Discount Badge */}
