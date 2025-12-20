@@ -15,7 +15,7 @@ const Home = () => {
         setFeaturedProducts(res.data); 
         setLoading(false); 
       } catch (err) {
-        console.error("Error fetching featured products:", err);
+        console.error("Error in fetching featured products:", err);
         setLoading(false);
       }
     };
