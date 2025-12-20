@@ -27,10 +27,10 @@ const Home = () => {
     <div className="min-h-screen bg-slate-50">
       
       {/* HERO SECTION */}
-      <div className="bg-slate-900 text-white py-20 px-6">
+      <div className="bg-slate-900 text-white py-10 md:py-20 px-6">
         <div className="container mx-auto flex flex-col md:flex-row items-center justify-between">
           <div className="md:w-1/2 mb-10 md:mb-0">
-            <h1 className="text-5xl font-extrabold italic mb-4 leading-tight">
+            <h1 className="text-3xl md:text-5xl font-extrabold italic mb-4 leading-tight">
               Upgrade Your <span className="text-red-600">Drive</span>
             </h1>
             <p className="text-gray-400 text-lg mb-8">
