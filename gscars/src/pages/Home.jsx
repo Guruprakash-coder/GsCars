@@ -11,7 +11,7 @@ const Home = () => {
     const fetchFeatured = async () => {
       try {
         // <--- 2. USE BASEURL HERE
-        const res = await axios.get(`${baseUrl}/api/products/featured`);
+        const res = await axios.get(`${baseUrl}/api/products/all`);
         setFeaturedProducts(res.data); 
         setLoading(false); 
       } catch (err) {
