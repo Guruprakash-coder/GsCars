@@ -30,7 +30,11 @@ const Admin = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await axios.get(`${baseUrl}/api/products/featured`);
+        // CHANGE THIS:
+// const res = await axios.get(`${baseUrl}/api/products/featured`);
+
+// TO THIS:
+const res = await axios.get(`${baseUrl}/api/products/all`);
         setProducts(res.data);
       } catch (err) { console.error(err); }
     };
@@ -59,11 +63,11 @@ const Admin = () => {
 
       if (editId) {
         // --- UPDATE MODE ---
-        await axios.put(`http://localhost:5000/api/products/update/${editId}`, finalData);
+        await axios.put(`${baseUrl}/api/products/update/${editId}`, finalData);
         setMessage("✅ Product Updated Successfully!");
       } else {
         // --- ADD MODE ---
-        await axios.post('http://localhost:5000/api/products/add', finalData);
+        await axios.post(`${baseUrl}/api/products/add`, finalData);
         setMessage("✅ Product Added Successfully!");
       }
 
@@ -94,7 +98,7 @@ const Admin = () => {
 
   const handleDelete = async (id) => {
     if (window.confirm("Delete this product?")) {
-      await axios.delete(`http://localhost:5000/api/products/delete/${id}`);
+      await axios.delete(`${baseUrl}/api/products/delete/${id}`);
       setRefresh(!refresh);
     }
   };
