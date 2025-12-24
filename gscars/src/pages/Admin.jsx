@@ -56,6 +56,7 @@ const res = await axios.get(`${baseUrl}/api/products/all`);
       // Process the cars list
       const finalData = {
         ...formData,
+        images: formData.images.split(',').map(url => url.trim()),
         compatibleCars: formData.compatibility === 'Specific' 
           ? (typeof formData.compatibleCars === 'string' ? formData.compatibleCars.split(',') : formData.compatibleCars)
           : []

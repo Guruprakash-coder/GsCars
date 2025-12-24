@@ -6,20 +6,25 @@ const Login = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     
     // --- THE SECRET PASSWORD ---
     // For now, we will hardcode it here. 
     // In a huge app, we would check this on the server.
-    if (password === "Gscars@123") { 
-      // 1. Save a "token" to prove we are logged in
-      localStorage.setItem("isAdmin", "true");
+    try {
+      const res = await axios.post(`${baseUrl}/api/auth/login`, { email, password });
       
-      // 2. Go to the Admin Dashboard
-      navigate("/admin");
-    } else {
-      setError("❌ Access Denied. Wrong Password.");
+      // Save entire user object (contains isAdmin flag)
+      localStorage.setItem("user", JSON.stringify(res.data));
+      
+      if (res.data.isAdmin) {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
+    } catch (err) {
+      alert("Login Failed");
     }
   };
 
