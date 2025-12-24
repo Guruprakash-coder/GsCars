@@ -41,7 +41,8 @@ const Home = () => {
               Shop Full Catalog
             </Link>
           </div>
-          <div className="md:w-1/2 flex justify-center">
+          <div className="hidden md:flex md:w-1/2 justify-center"> 
+  {/* The 'hidden' hides it on mobile. 'md:flex' shows it on laptop. */}
             <div className="w-64 h-64 md:w-80 md:h-80 bg-gradient-to-tr from-blue-600 to-slate-800 rounded-full flex items-center justify-center shadow-2xl border-4 border-slate-700">
               <span className="text-4xl font-bold italic">GsCars</span>
             </div>

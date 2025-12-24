@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 
 const Navbar = () => {
   const location = useLocation(); 
-  const [isOpen, setIsOpen] = useState(false); // State for mobile menu
+  const [isOpen, setIsOpen] = useState(false); 
 
   const isActive = (path) => {
     return location.pathname === path ? "text-red-500" : "text-white hover:text-red-400";
@@ -14,8 +14,22 @@ const Navbar = () => {
       <div className="container mx-auto px-6 py-4">
         
         <div className="flex justify-between items-center">
-          {/* LEFT: Brand Name */}
-          <Link to="/" className="flex flex-col group">
+          
+          {/* 1. MOBILE HAMBURGER BUTTON (Moved to Top = Left Side) */}
+          <div className="md:hidden flex items-center">
+            <button onClick={() => setIsOpen(!isOpen)} className="text-white focus:outline-none">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {isOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+          </div>
+
+          {/* 2. BRAND NAME (Now appears on the Right on Mobile) */}
+          <Link to="/" className="flex flex-col group items-end md:items-start"> {/* Changed items-start to items-end for right align on mobile if desired, or keep default */}
             <span className="text-3xl font-extrabold tracking-wide uppercase italic leading-none transition duration-300 group-hover:scale-105">
               <span className="text-blue-500">Gs</span>
               <span className="text-red-600">Cars</span>
@@ -25,7 +39,7 @@ const Navbar = () => {
             </span>
           </Link>
 
-          {/* DESKTOP MENU (Hidden on Mobile) */}
+          {/* 3. DESKTOP MENU (Hidden on Mobile) */}
           <div className="hidden md:flex space-x-8 font-medium items-center">
             <Link to="/" className={`${isActive('/')} transition duration-300`}>Home</Link>
             <Link to="/products" className={`${isActive('/products')} transition duration-300`}>Shop</Link>
@@ -34,23 +48,11 @@ const Navbar = () => {
             </Link>
           </div>
 
-          {/* MOBILE HAMBURGER BUTTON (Visible only on Mobile) */}
-          <div className="md:hidden flex items-center">
-            <button onClick={() => setIsOpen(!isOpen)} className="text-white focus:outline-none">
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                {isOpen ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /> // X Icon
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /> // Hamburger Icon
-                )}
-              </svg>
-            </button>
-          </div>
         </div>
 
         {/* MOBILE MENU DROPDOWN */}
         {isOpen && (
-          <div className="md:hidden mt-4 pb-4 space-y-4 flex flex-col items-center bg-slate-800 rounded-xl p-6 border border-slate-700 animate-fade-in-down">
+          <div className="md:hidden mt-4 pb-4 space-y-4 flex flex-col items-center bg-slate-800 rounded-xl p-6 border border-slate-700">
             <Link to="/" onClick={() => setIsOpen(false)} className={`text-xl ${isActive('/')}`}>Home</Link>
             <Link to="/products" onClick={() => setIsOpen(false)} className={`text-xl ${isActive('/products')}`}>Shop Catalog</Link>
             <Link to="/admin" onClick={() => setIsOpen(false)} className="px-8 py-3 bg-blue-600 text-white rounded-full w-full text-center">Admin Login</Link>
