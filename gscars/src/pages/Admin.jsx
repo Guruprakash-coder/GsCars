@@ -1,25 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { baseUrl } from '../url'; // Import it
+import { baseUrl } from '../url';
 
-// ... inside axios ...
-//axios.get(`${baseUrl}/api/products/featured`) // Use it
 const Admin = () => {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [refresh, setRefresh] = useState(false);
   const [message, setMessage] = useState("");
-
-  // STATE: EDIT MODE (If this has an ID, we are editing. If null, we are adding)
   const [editId, setEditId] = useState(null);
 
   const [formData, setFormData] = useState({
     name: '', 
     price: '', 
-    originalPrice: '', // NEW FIELD
+    originalPrice: '', 
     category: 'Interior', 
-    image: '',
+    images: '', // CHANGED to plural
     compatibility: 'Universal', 
     compatibleCars: '', 
     isFeatured: false, 
@@ -30,11 +26,7 @@ const Admin = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        // CHANGE THIS:
-// const res = await axios.get(`${baseUrl}/api/products/featured`);
-
-// TO THIS:
-const res = await axios.get(`${baseUrl}/api/products/all`);
+        const res = await axios.get(`${baseUrl}/api/products/all`);
         setProducts(res.data);
       } catch (err) { console.error(err); }
     };
@@ -49,13 +41,13 @@ const res = await axios.get(`${baseUrl}/api/products/all`);
     }));
   };
 
-  // 2. HANDLE SUBMIT (Smart: Decides between ADD or UPDATE)
+  // 2. HANDLE SUBMIT
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Process the cars list
       const finalData = {
         ...formData,
+        // Convert comma-separated string to Array
         images: formData.images.split(',').map(url => url.trim()),
         compatibleCars: formData.compatibility === 'Specific' 
           ? (typeof formData.compatibleCars === 'string' ? formData.compatibleCars.split(',') : formData.compatibleCars)
@@ -63,11 +55,9 @@ const res = await axios.get(`${baseUrl}/api/products/all`);
       };
 
       if (editId) {
-        // --- UPDATE MODE ---
         await axios.put(`${baseUrl}/api/products/update/${editId}`, finalData);
         setMessage("✅ Product Updated Successfully!");
       } else {
-        // --- ADD MODE ---
         await axios.post(`${baseUrl}/api/products/add`, finalData);
         setMessage("✅ Product Added Successfully!");
       }
@@ -80,21 +70,22 @@ const res = await axios.get(`${baseUrl}/api/products/all`);
     }
   };
 
-  // 3. EDIT CLICK HANDLER (Fills the form)
+  // 3. EDIT CLICK HANDLER
   const handleEdit = (product) => {
-    setEditId(product._id); // Turn on Edit Mode
+    setEditId(product._id);
     setFormData({
       name: product.name,
       price: product.price,
-      originalPrice: product.originalPrice || product.price, // Fallback
+      originalPrice: product.originalPrice || product.price,
       category: product.category,
-      image: product.image,
+      // Join array back to string for editing
+      images: product.images ? product.images.join(', ') : '', 
       compatibility: product.compatibility,
-      compatibleCars: product.compatibleCars.join(', '), // Convert Array back to String
+      compatibleCars: product.compatibleCars.join(', '),
       isFeatured: product.isFeatured,
       description: product.description || ''
     });
-    window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll to top to see form
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDelete = async (id) => {
@@ -105,15 +96,16 @@ const res = await axios.get(`${baseUrl}/api/products/all`);
   };
 
   const resetForm = () => {
-    setEditId(null); // Turn off Edit Mode
+    setEditId(null);
     setFormData({
-      name: '', price: '', originalPrice: '', category: 'Interior', image: '',
+      name: '', price: '', originalPrice: '', category: 'Interior', 
+      images: '', // Reset plural
       compatibility: 'Universal', compatibleCars: '', isFeatured: false, description: ''
     });
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("isAdmin");
+    localStorage.removeItem("user"); // Clear user object
     navigate("/login");
   };
 
@@ -121,7 +113,6 @@ const res = await axios.get(`${baseUrl}/api/products/all`);
     <div className="min-h-screen bg-slate-800 py-10 px-4">
       <div className="max-w-4xl mx-auto">
         
-        {/* FORM SECTION */}
         <div className="bg-slate-900 p-8 rounded-xl shadow-2xl border border-slate-700 mb-10">
           <div className="flex justify-between items-center mb-6 border-b border-gray-700 pb-4">
             <h2 className="text-2xl font-bold text-white">
@@ -138,7 +129,6 @@ const res = await axios.get(`${baseUrl}/api/products/all`);
                 <label className="text-gray-400 text-sm block">Product Name</label>
                 <input type="text" name="name" value={formData.name} onChange={handleChange} required className="w-full bg-slate-800 text-white p-3 rounded border border-slate-600"/>
               </div>
-              {/* PRICE FIELDS */}
               <div>
                 <label className="text-gray-400 text-sm block">Original MRP (₹)</label>
                 <input type="number" name="originalPrice" value={formData.originalPrice} onChange={handleChange} required className="w-full bg-slate-800 text-white p-3 rounded border border-slate-600 focus:border-red-500"/>
@@ -149,15 +139,15 @@ const res = await axios.get(`${baseUrl}/api/products/all`);
               </div>
             </div>
 
-            {/* KEEP REST OF THE FORM (Category, Image, Compatibility, Description) SAME AS BEFORE */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="text-gray-400 text-sm block">Category</label>
                 <select name="category" value={formData.category} onChange={handleChange} className="w-full bg-slate-800 text-white p-3 rounded border border-slate-600"><option>Interior</option><option>Exterior</option><option>Lighting</option><option>Car Care</option><option>Electronics</option></select>
               </div>
               <div>
-                <label className="text-gray-400 text-sm block">Image URL</label>
-                <input type="text" name="image" value={formData.image} onChange={handleChange} required className="w-full bg-slate-800 text-white p-3 rounded border border-slate-600"/>
+                <label className="text-gray-400 text-sm block">Image URLs (Comma separated)</label>
+                {/* CHANGED NAME TO IMAGES */}
+                <input type="text" name="images" value={formData.images} onChange={handleChange} required placeholder="link1.jpg, link2.jpg" className="w-full bg-slate-800 text-white p-3 rounded border border-slate-600"/>
               </div>
             </div>
 
@@ -188,7 +178,6 @@ const res = await axios.get(`${baseUrl}/api/products/all`);
         {/* LIST SECTION */}
         <div className="bg-slate-900 p-8 rounded-xl border border-slate-700">
            <h2 className="text-2xl font-bold text-white mb-6">Product List</h2>
-           {/* TABLE */}
            <div className="overflow-x-auto">
             <table className="w-full text-left text-gray-400">
               <thead className="text-xs uppercase bg-slate-800 text-gray-200">
