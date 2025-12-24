@@ -1,21 +1,22 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import axios from 'axios'; // IMPORTED
+import { useNavigate, Link } from 'react-router-dom';
+import { baseUrl } from '../url'; // IMPORTED
 
 const Login = () => {
+  const [email, setEmail] = useState(''); // Added Email State
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError(""); // Clear previous errors
     
-    // --- THE SECRET PASSWORD ---
-    // For now, we will hardcode it here. 
-    // In a huge app, we would check this on the server.
     try {
       const res = await axios.post(`${baseUrl}/api/auth/login`, { email, password });
       
-      // Save entire user object (contains isAdmin flag)
+      // Save user object
       localStorage.setItem("user", JSON.stringify(res.data));
       
       if (res.data.isAdmin) {
@@ -24,7 +25,7 @@ const Login = () => {
         navigate("/");
       }
     } catch (err) {
-      alert("Login Failed");
+      setError("❌ Invalid Email or Password");
     }
   };
 
@@ -37,18 +38,33 @@ const Login = () => {
             <span className="text-blue-500">Gs</span>
             <span className="text-red-600">Cars</span>
           </h1>
-          <p className="text-gray-400 text-sm tracking-widest uppercase">Admin Security</p>
+          <p className="text-gray-400 text-sm tracking-widest uppercase">Secure Login</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-6">
+          
+          {/* ADDED EMAIL INPUT */}
           <div>
-            <label className="text-gray-400 text-sm mb-1 block">Enter Admin Password</label>
+            <label className="text-gray-400 text-sm mb-1 block">Email Address</label>
+            <input 
+              type="email" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full bg-slate-900 text-white p-3 rounded border border-slate-600 focus:border-blue-500 outline-none"
+              placeholder="you@example.com"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="text-gray-400 text-sm mb-1 block">Password</label>
             <input 
               type="password" 
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-slate-900 text-white p-3 rounded border border-slate-600 focus:border-red-600 outline-none text-center tracking-widest"
+              className="w-full bg-slate-900 text-white p-3 rounded border border-slate-600 focus:border-red-600 outline-none"
               placeholder="••••••••"
+              required
             />
           </div>
 
@@ -62,9 +78,13 @@ const Login = () => {
             type="submit" 
             className="w-full bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-500 hover:to-blue-700 text-white py-3 rounded-lg font-bold shadow-lg transform transition hover:scale-105"
           >
-            Unlock Dashboard
+            Login
           </button>
         </form>
+
+        <div className="mt-6 text-center text-gray-500 text-xs">
+          Don't have an account? <Link to="/signup" className="text-blue-400 hover:underline">Sign up here</Link>
+        </div>
 
       </div>
     </div>
