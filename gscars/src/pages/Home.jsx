@@ -11,7 +11,7 @@ const Home = () => {
     const fetchFeatured = async () => {
       try {
         // <--- 2. USE BASEURL HERE
-        const res = await axios.get(`${baseUrl}/api/products/all`);
+        const res = await axios.get(`${baseUrl}/api/products/featured`);
         setFeaturedProducts(res.data); 
         setLoading(false); 
       } catch (err) {
@@ -59,34 +59,45 @@ const Home = () => {
         {loading ? (
           <div className="text-center py-20 text-gray-500 animate-pulse">Loading amazing products...</div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {featuredProducts.map((product) => (
-              <Link to={`/product/${product._id}`} key={product._id} className="bg-white rounded-xl shadow-md hover:shadow-2xl transition duration-300 overflow-hidden group border border-gray-100 relative block">
-                 {product.originalPrice > product.price && (
-                    <div className="absolute top-3 right-3 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow-lg z-10">
-                      {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
-                    </div>
-                  )}
-                 <span className={`absolute top-3 left-3 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white rounded-full z-10 ${product.compatibility === 'Universal' ? 'bg-green-600' : 'bg-blue-600'}`}>
-                    {product.compatibility}
-                 </span>
-                 <div className="h-56 overflow-hidden bg-gray-100 relative">
-                   <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
-                 </div>
-                 <div className="p-5">
-                   <h3 className="text-lg font-bold text-slate-900 mb-1 truncate group-hover:text-blue-600 transition">{product.name}</h3>
-                   <p className="text-xs text-gray-500 mb-3 uppercase tracking-wide">{product.category}</p>
-                   <div className="border-t border-gray-100 pt-3 flex items-center justify-between">
-                      <div className="flex flex-col">
-                        {product.originalPrice > product.price && <span className="text-gray-400 line-through text-xs">₹{product.originalPrice}</span>}
-                        <span className="text-red-600 font-extrabold text-xl">₹{product.price}</span>
-                      </div>
-                      <span className="text-xs font-bold text-blue-600 hover:underline">View Details &rarr;</span>
-                   </div>
-                 </div>
-              </Link>
-            ))}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-8"> {/* Gap-3 is small for mobile */}
+  {featuredProducts.map((product) => (
+    <Link to={`/product/${product._id}`} key={product._id} className="bg-white rounded-xl shadow-md hover:shadow-2xl transition duration-300 overflow-hidden group border border-gray-100 relative block">
+        
+        {/* Discount Badge (Smaller text) */}
+        {product.originalPrice > product.price && (
+          <div className="absolute top-2 right-2 bg-red-600 text-white text-[9px] md:text-[10px] font-bold px-1.5 py-0.5 rounded shadow-lg z-10">
+            {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
           </div>
+        )}
+        
+        {/* Image (Adjust height) */}
+        <div className="h-32 md:h-56 overflow-hidden bg-gray-100 relative">
+          <img src={product.image} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+        </div>
+        
+        {/* Info (Reduced Padding: p-3 instead of p-5) */}
+        <div className="p-3 md:p-5">
+          <h3 className="text-sm md:text-lg font-bold text-slate-900 mb-1 truncate group-hover:text-blue-600 transition">
+            {product.name}
+          </h3>
+          <p className="text-[10px] md:text-xs text-gray-500 mb-2 uppercase tracking-wide">
+            {product.category}
+          </p>
+          
+          <div className="border-t border-gray-100 pt-2 flex items-center justify-between">
+            <div className="flex flex-col">
+              {product.originalPrice > product.price && (
+                <span className="text-gray-400 line-through text-[10px] md:text-xs">₹{product.originalPrice}</span>
+              )}
+              <span className="text-red-600 font-extrabold text-base md:text-xl">₹{product.price}</span>
+            </div>
+            {/* Hide "View Details" text on mobile, show on laptop */}
+            <span className="hidden md:block text-xs font-bold text-blue-600 hover:underline">View &rarr;</span>
+          </div>
+        </div>
+    </Link>
+  ))}
+</div>
         )}
         
         {!loading && featuredProducts.length === 0 && (
