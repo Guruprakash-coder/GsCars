@@ -1,22 +1,36 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
-import { baseUrl } from '../url'; // Import it
+import { baseUrl } from '../url';
 
-// ... inside axios ...
-//axios.get(`${baseUrl}/api/products/featured`) // Use it
 const ProductDetails = () => {
-  const { id } = useParams(); // Get the ID from the URL
+  const { id } = useParams();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [mainImage, setMainImage] = useState(""); // State for the currently visible image
 
-  // 1. FETCH PRODUCT DATA
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         const res = await axios.get(`${baseUrl}/api/products/find/${id}`);
         setProduct(res.data);
+        
+        // Set the initial main image (first one in the array)
+        if (res.data.images && res.data.images.length > 0) {
+          setMainImage(res.data.images[0]);
+        }
+
         setLoading(false);
+
+        // --- AI TRACKING LOGIC ---
+        // If a user is logged in, tell the backend they viewed this product
+        const user = JSON.parse(localStorage.getItem("user"));
+        if (user) {
+          await axios.put(`${baseUrl}/api/users/track/${user._id}`, {
+            productId: res.data._id
+          });
+        }
+
       } catch (err) {
         console.error("Error fetching product:", err);
         setLoading(false);
@@ -25,9 +39,10 @@ const ProductDetails = () => {
     fetchProduct();
   }, [id]);
 
-  // 2. WHATSAPP CLICK HANDLER
+  // WHATSAPP CLICK HANDLER
   const handleBuyClick = () => {
-    const phoneNumber = "919360666663"; // REPLACE with your father's number
+    if (!product) return;
+    const phoneNumber = "919360666663"; // REPLACE with your phone number
     const message = `Hello, I want to buy *${product.name}* (Price: ₹${product.price}). Is it in stock?`;
     const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank');
@@ -46,37 +61,59 @@ const ProductDetails = () => {
       <div className="container mx-auto px-6">
         
         {/* BREADCRUMB (Back Button) */}
-        <Link to="/products" className="text-gray-500 hover:text-blue-600 mb-6 inline-block">
+        <Link to="/products" className="text-gray-500 hover:text-blue-600 mb-6 inline-block font-medium">
           &larr; Back to Catalog
         </Link>
 
         {/* MAIN CARD */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 flex flex-col md:flex-row">
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100 flex flex-col md:flex-row gap-8 p-6 md:p-8">
           
-          {/* LEFT: IMAGE SECTION */}
-          <div className="md:w-1/2 bg-gray-100 p-8 flex items-center justify-center relative">
-            <img 
-              src={product.image} 
-              alt={product.name} 
-              className="w-full md:max-h-[400px] md:w-auto object-contain drop-shadow-2xl"
-            />
+          {/* --- LEFT SIDE: IMAGE SLIDER --- */}
+          <div className="md:w-1/2 flex flex-col">
             
-            {/* Discount Badge */}
-            {discount > 0 && (
-               <div className="absolute top-4 left-4 bg-red-600 text-white text-sm font-bold px-3 py-1 rounded shadow-lg">
-                 {discount}% OFF
-               </div>
+            {/* Main Image Display */}
+            <div className="h-64 md:h-96 bg-gray-100 rounded-xl overflow-hidden mb-4 relative flex items-center justify-center border border-gray-200">
+              <img 
+                src={mainImage || "https://via.placeholder.com/400"} 
+                alt={product.name} 
+                className="w-full h-full object-contain p-4 drop-shadow-xl hover:scale-105 transition duration-500" 
+              />
+              
+              {/* Discount Badge */}
+              {discount > 0 && (
+                 <div className="absolute top-4 left-4 bg-red-600 text-white text-sm font-bold px-3 py-1 rounded shadow-lg z-10">
+                   {discount}% OFF
+                 </div>
+              )}
+            </div>
+
+            {/* Thumbnail Strip (Only show if there is more than 1 image) */}
+            {product.images && product.images.length > 1 && (
+              <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                {product.images.map((img, index) => (
+                  <img 
+                    key={index} 
+                    src={img} 
+                    onClick={() => setMainImage(img)}
+                    className={`w-20 h-20 object-cover rounded-lg cursor-pointer border-2 transition-all duration-200 
+                      ${mainImage === img ? 'border-red-600 scale-105' : 'border-transparent hover:border-gray-300 opacity-70 hover:opacity-100'}`}
+                    alt={`View ${index + 1}`}
+                  />
+                ))}
+              </div>
             )}
           </div>
 
-          {/* RIGHT: DETAILS SECTION */}
-          <div className="md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
+          {/* --- RIGHT SIDE: DETAILS --- */}
+          <div className="md:w-1/2 flex flex-col justify-center">
             
+            {/* Category */}
             <span className="text-blue-600 font-bold text-sm uppercase tracking-widest mb-2">
               {product.category}
             </span>
             
-            <h1 className="text-4xl font-extrabold text-slate-900 mb-4 leading-tight">
+            {/* Product Name */}
+            <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4 leading-tight">
               {product.name}
             </h1>
 
@@ -90,10 +127,10 @@ const ProductDetails = () => {
 
             {/* Compatibility Box */}
             <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 mb-6">
-              <h3 className="text-sm font-bold text-gray-500 uppercase mb-2">Compatibility</h3>
+              <h3 className="text-xs font-bold text-gray-500 uppercase mb-2">Compatibility</h3>
               <div className="flex flex-wrap gap-2">
                 {product.compatibility === 'Universal' ? (
-                  <span className="px-3 py-1 bg-green-100 text-green-800 text-sm font-bold rounded-full">
+                  <span className="px-3 py-1 bg-green-100 text-green-800 text-sm font-bold rounded-full flex items-center gap-1">
                     ✅ Universal Fit
                   </span>
                 ) : (
@@ -113,14 +150,14 @@ const ProductDetails = () => {
 
             {/* Description */}
             <div className="mb-8">
-              <h3 className="text-sm font-bold text-gray-500 uppercase mb-2">Description</h3>
-              <p className="text-gray-600 leading-relaxed whitespace-pre-line">
+              <h3 className="text-xs font-bold text-gray-500 uppercase mb-2">Description</h3>
+              <p className="text-gray-600 leading-relaxed whitespace-pre-line text-sm md:text-base">
                 {product.description || "No specific description available for this product. Contact us for more details."}
               </p>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-4">
+            <div className="flex gap-4 mt-auto">
               <button 
                 onClick={handleBuyClick}
                 className="flex-1 bg-green-600 hover:bg-green-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-green-200 transition transform hover:-translate-y-1 flex items-center justify-center gap-2"

@@ -138,7 +138,7 @@ const Shop = () => {
         {/* Image Section */}
         <div className="h-32 md:h-56 overflow-hidden bg-gray-100 relative">
           <img 
-            src={product.image} 
+            src={product.image[0]} 
             alt={product.name} 
             className="w-full h-full object-cover group-hover:scale-110 transition duration-500" 
           />
