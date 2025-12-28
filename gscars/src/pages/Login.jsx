@@ -1,13 +1,22 @@
-import React, { useState } from 'react';
-import axios from 'axios'; // IMPORTED
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import { baseUrl } from '../url'; // IMPORTED
+import { baseUrl } from '../url';
 
 const Login = () => {
-  const [email, setEmail] = useState(''); // Added Email State
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  // 1. CHECK IF ALREADY LOGGED IN
+  // If a user is already saved in the browser, send them to Profile immediately.
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (user) {
+      navigate("/profile");
+    }
+  }, [navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -16,14 +25,13 @@ const Login = () => {
     try {
       const res = await axios.post(`${baseUrl}/api/auth/login`, { email, password });
       
-      // Save user object
+      // 2. SAVE USER & REDIRECT TO PROFILE
+      // We save the user data to browser storage so they stay logged in.
       localStorage.setItem("user", JSON.stringify(res.data));
       
-      if (res.data.isAdmin) {
-        navigate("/admin");
-      } else {
-        navigate("/");
-      }
+      // Everyone goes to Profile now (Admin button is inside Profile)
+      navigate("/profile"); 
+      
     } catch (err) {
       setError("❌ Invalid Email or Password");
     }
@@ -43,7 +51,7 @@ const Login = () => {
 
         <form onSubmit={handleLogin} className="space-y-6">
           
-          {/* ADDED EMAIL INPUT */}
+          {/* EMAIL INPUT */}
           <div>
             <label className="text-gray-400 text-sm mb-1 block">Email Address</label>
             <input 
@@ -56,6 +64,7 @@ const Login = () => {
             />
           </div>
 
+          {/* PASSWORD INPUT */}
           <div>
             <label className="text-gray-400 text-sm mb-1 block">Password</label>
             <input 
@@ -68,12 +77,14 @@ const Login = () => {
             />
           </div>
 
+          {/* ERROR MESSAGE */}
           {error && (
             <div className="text-red-500 text-sm text-center font-bold animate-pulse">
               {error}
             </div>
           )}
 
+          {/* SUBMIT BUTTON */}
           <button 
             type="submit" 
             className="w-full bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-500 hover:to-blue-700 text-white py-3 rounded-lg font-bold shadow-lg transform transition hover:scale-105"

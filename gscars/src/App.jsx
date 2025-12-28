@@ -5,7 +5,8 @@ import Home from './pages/Home';
 import Admin from './pages/Admin';
 import Shop from './pages/Shop';
 import Login from './pages/Login';
-import Signup from './pages/Signup'; // <--- 1. IMPORT THIS
+import Signup from './pages/Signup';
+import Profile from './pages/Profile'; // <--- IMPORT THIS
 import PrivateRoute from './components/PrivateRoute';
 import ProductDetails from './pages/ProductDetails';
 
@@ -20,7 +21,8 @@ function App() {
           <Route path="/products" element={<Shop />} />
           <Route path="/product/:id" element={<ProductDetails />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} /> {/* <--- 2. ADD THIS ROUTE */}
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/profile" element={<Profile />} /> {/* <--- ADD THIS */}
           
           <Route 
             path="/admin" 

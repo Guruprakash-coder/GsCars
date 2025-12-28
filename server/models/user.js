@@ -4,9 +4,12 @@ const userSchema = new mongoose.Schema({
   username: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  isAdmin: { type: Boolean, default: false }, // Only true for you
+  isAdmin: { type: Boolean, default: false },
   
-  // FOR AI TRAINING: We store which products they looked at
+  // NEW: Store user interests
+  interests: { type: [String], default: [] }, 
+
+  // AI TRAINING
   searchHistory: [
     {
       productId: { type: String },
