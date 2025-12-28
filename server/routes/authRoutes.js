@@ -1,20 +1,13 @@
 const router = require('express').Router();
 const User = require('../models/user');
-const OTP = require('../models/otp'); // New Model
-const nodemailer = require('nodemailer');
+const OTP = require('../models/otp');
+const Brevo = require('@getbrevo/brevo'); // Import Brevo
 const dotenv = require('dotenv');
 dotenv.config();
 
-// EMAIL SETUP
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com", // Hostname
-  port: 465,              // Secure Port
-  secure: true,           // Use SSL
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  }
-});
+// BREVO SETUP
+const apiInstance = new Brevo.TransactionalEmailsApi();
+apiInstance.setApiKey(Brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY);
 
 // 1. INITIATE SIGNUP (Send OTP)
 router.post('/signup-init', async (req, res) => {
@@ -29,22 +22,24 @@ router.post('/signup-init', async (req, res) => {
     const otpCode = Math.floor(1000 + Math.random() * 9000).toString();
 
     // Save OTP to DB
-    // First, delete any old OTPs for this email
     await OTP.deleteMany({ email });
     const newOtp = new OTP({ email, otp: otpCode });
     await newOtp.save();
 
-    // Send Email
-    await transporter.sendMail({
-      from: '"GsCars Security" <' + process.env.EMAIL_USER + '>',
-      to: email,
-      subject: 'Your GsCars Verification Code',
-      text: `Your verification code is: ${otpCode}. It expires in 5 minutes.`
-    });
+    // Send Email via BREVO API
+    const sendSmtpEmail = new Brevo.SendSmtpEmail();
+    sendSmtpEmail.subject = "Your GsCars Verification Code";
+    sendSmtpEmail.htmlContent = `<html><body><h1>Welcome to GsCars!</h1><p>Your verification code is: <strong>${otpCode}</strong></p><p>This code expires in 5 minutes.</p></body></html>`;
+    
+    // IMPORTANT: Sender must be verified in Brevo
+    sendSmtpEmail.sender = { "name": "GsCars Team", "email": process.env.BREVO_SENDER_EMAIL }; 
+    sendSmtpEmail.to = [{ "email": email }];
+
+    await apiInstance.sendTransacEmail(sendSmtpEmail);
 
     res.status(200).json("OTP Sent Successfully");
   } catch (err) {
-    console.log(err);
+    console.error("Brevo Error:", err);
     res.status(500).json("Failed to send email");
   }
 });
