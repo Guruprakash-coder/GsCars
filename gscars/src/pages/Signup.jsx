@@ -67,11 +67,11 @@ const Signup = () => {
           <form onSubmit={handleSendOtp} className="space-y-5">
             <div>
               <label className="text-gray-400 text-sm mb-1 block">Username</label>
-              <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} className="w-full bg-slate-900 text-white p-3 rounded border border-slate-600 focus:border-blue-500 outline-none" placeholder="Driver123" required />
+              <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} className="w-full bg-slate-900 text-white p-3 rounded border border-slate-600 focus:border-blue-500 outline-none" placeholder="Enter user name ..." required />
             </div>
             <div>
               <label className="text-gray-400 text-sm mb-1 block">Email Address</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-slate-900 text-white p-3 rounded border border-slate-600 focus:border-blue-500 outline-none" placeholder="you@gmail.com" required />
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full bg-slate-900 text-white p-3 rounded border border-slate-600 focus:border-blue-500 outline-none" placeholder="Enter valid gmail account" required />
             </div>
             <div>
               <label className="text-gray-400 text-sm mb-1 block">Password</label>
