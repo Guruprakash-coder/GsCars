@@ -80,7 +80,7 @@ const Signup = () => {
             {error && <div className="text-red-500 text-sm text-center font-bold">{error}</div>}
             
             <button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-red-600 to-red-800 hover:from-red-500 hover:to-red-700 text-white py-3 rounded-lg font-bold shadow-lg transition">
-              {loading ? "Sending OTP..." : "Next: Verify Email"}
+              {loading ? "Sending OTP..." : "Sign in"}
             </button>
           </form>
 
