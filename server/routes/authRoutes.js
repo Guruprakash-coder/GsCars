@@ -76,5 +76,62 @@ router.post('/login', async (req, res) => {
     res.status(200).json(others);
   } catch (err) { res.status(500).json(err); }
 });
+// ... existing imports (User, OTP, nodemailer, etc.)
 
+// 3. CHANGE PASSWORD - STEP 1: SEND OTP
+router.post('/pass-reset-init', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    // User must exist
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json("User not found");
+
+    // Generate OTP
+    const otpCode = Math.floor(1000 + Math.random() * 9000).toString();
+
+    // Save OTP (Clear old ones first)
+    await OTP.deleteMany({ email });
+    const newOtp = new OTP({ email, otp: otpCode });
+    await newOtp.save();
+
+    // Send Email (Using your existing transporter)
+    await transporter.sendMail({
+      from: '"GsCars Security" <' + process.env.EMAIL_USER + '>',
+      to: email,
+      subject: 'Reset Password Verification',
+      text: `Your password reset code is: ${otpCode}. It expires in 5 minutes.`
+    });
+
+    res.status(200).json("OTP Sent");
+  } catch (err) {
+    console.log(err);
+    res.status(500).json("Failed to send OTP");
+  }
+});
+
+// 4. CHANGE PASSWORD - STEP 2: VERIFY & UPDATE
+router.post('/pass-reset-verify', async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    // Verify OTP
+    const validOtp = await OTP.findOne({ email, otp });
+    if (!validOtp) return res.status(400).json("Invalid OTP");
+
+    // Update Password
+    const user = await User.findOne({ email });
+    user.password = newPassword; 
+    await user.save();
+
+    // Cleanup
+    await OTP.deleteOne({ _id: validOtp._id });
+
+    res.status(200).json("Password Updated Successfully");
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+// module.exports = router;
 module.exports = router;
