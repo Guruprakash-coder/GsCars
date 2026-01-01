@@ -3,28 +3,29 @@ import { Link, useLocation } from 'react-router-dom';
 
 const MobileMenu = ({ isOpen, onClose }) => {
   const location = useLocation();
+  
+  // 1. GET USER DATA
+  const user = JSON.parse(localStorage.getItem("user"));
 
   const isActive = (path) => {
     return location.pathname === path ? "text-red-500 bg-slate-800" : "text-gray-300 hover:bg-slate-800 hover:text-white";
   };
 
-  // If menu is closed, don't render anything (or render hidden for animation)
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-[60] flex">
       
-      {/* 1. BLACK BACKDROP (Clicking this closes the menu) */}
+      {/* BLACK BACKDROP */}
       <div 
         className="fixed inset-0 bg-black bg-opacity-70 backdrop-blur-sm transition-opacity" 
         onClick={onClose}
       ></div>
 
-      {/* 2. SIDE DRAWER (The actual menu) */}
-      {/* w-[75%] makes it cover 75% of the width */}
+      {/* SIDE DRAWER */}
       <div className="relative w-[75%] h-full bg-slate-900 shadow-2xl border-r border-slate-700 flex flex-col p-6 animate-slide-in">
         
-        {/* CLOSE BUTTON (X) */}
+        {/* CLOSE BUTTON */}
         <button 
           onClick={onClose} 
           className="absolute top-4 right-4 p-2 text-gray-400 hover:text-white bg-slate-800 rounded-full"
@@ -61,16 +62,43 @@ const MobileMenu = ({ isOpen, onClose }) => {
             Shop Catalog
           </Link>
 
-          <Link 
-            to="/admin" 
-            onClick={onClose} 
-            className={`px-4 py-3 rounded-xl text-lg font-medium transition ${isActive('/admin')}`}
-          >
-            Admin Dashboard
-          </Link>
+          {/* --- DYNAMIC SECTION --- */}
+          {!user ? (
+            // SCENARIO 1: NOT LOGGED IN -> Show Login
+            <Link 
+              to="/login" 
+              onClick={onClose} 
+              className={`px-4 py-3 rounded-xl text-lg font-medium transition ${isActive('/login')}`}
+            >
+              Login
+            </Link>
+          ) : (
+            // SCENARIO 2: LOGGED IN (User OR Admin)
+            <>
+              <Link 
+                to="/profile" 
+                onClick={onClose} 
+                className={`px-4 py-3 rounded-xl text-lg font-medium transition ${isActive('/profile')}`}
+              >
+                Profile
+              </Link>
+
+              {/* SCENARIO 3: ADMIN ONLY -> Show Dashboard */}
+              {user.isAdmin && (
+                <Link 
+                  to="/admin" 
+                  onClick={onClose} 
+                  className={`px-4 py-3 rounded-xl text-lg font-medium transition ${isActive('/admin')}`}
+                >
+                  Admin Dashboard
+                </Link>
+              )}
+            </>
+          )}
+
         </nav>
 
-        {/* FOOTER TEXT */}
+        {/* FOOTER */}
         <div className="mt-auto text-gray-500 text-xs text-center">
           &copy; {new Date().getFullYear()} GsCars App
         </div>
