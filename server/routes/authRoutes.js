@@ -78,7 +78,9 @@ router.post('/login', async (req, res) => {
 });
 // ... existing imports (User, OTP, nodemailer, etc.)
 
-// 3. CHANGE PASSWORD - STEP 1: SEND OTP
+// ... (Your imports and Brevo setup exist above)
+
+// 3. CHANGE PASSWORD - STEP 1: SEND OTP (CORRECTED FOR BREVO)
 router.post('/pass-reset-init', async (req, res) => {
   try {
     const { email } = req.body;
@@ -90,27 +92,35 @@ router.post('/pass-reset-init', async (req, res) => {
     // Generate OTP
     const otpCode = Math.floor(1000 + Math.random() * 9000).toString();
 
-    // Save OTP (Clear old ones first)
+    // Save OTP
     await OTP.deleteMany({ email });
     const newOtp = new OTP({ email, otp: otpCode });
     await newOtp.save();
 
-    // Send Email (Using your existing transporter)
-    await transporter.sendMail({
-      from: '"GsCars Security" <' + process.env.EMAIL_USER + '>',
-      to: email,
-      subject: 'Reset Password Verification',
-      text: `Your password reset code is: ${otpCode}. It expires in 5 minutes.`
-    });
+    // --- SEND EMAIL VIA BREVO API (HTTP) ---
+    const sendSmtpEmail = new Brevo.SendSmtpEmail();
+    sendSmtpEmail.subject = "Reset Password Verification";
+    sendSmtpEmail.htmlContent = `<html><body>
+      <h1>Password Reset Request</h1>
+      <p>Your verification code is: <strong>${otpCode}</strong></p>
+      <p>If you did not request this, please ignore this email.</p>
+    </body></html>`;
+    
+    // Sender & Recipient
+    sendSmtpEmail.sender = { "name": "GsCars Security", "email": process.env.BREVO_SENDER_EMAIL };
+    sendSmtpEmail.to = [{ "email": email }];
+
+    // Send
+    await apiInstance.sendTransacEmail(sendSmtpEmail);
 
     res.status(200).json("OTP Sent");
   } catch (err) {
-    console.log(err);
+    console.error("Brevo Error:", err);
     res.status(500).json("Failed to send OTP");
   }
 });
 
-// 4. CHANGE PASSWORD - STEP 2: VERIFY & UPDATE
+// 4. CHANGE PASSWORD - STEP 2: VERIFY & UPDATE (No changes needed here)
 router.post('/pass-reset-verify', async (req, res) => {
   try {
     const { email, otp, newPassword } = req.body;
@@ -132,6 +142,5 @@ router.post('/pass-reset-verify', async (req, res) => {
     res.status(500).json(err);
   }
 });
-
 // module.exports = router;
 module.exports = router;
