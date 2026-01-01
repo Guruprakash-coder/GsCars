@@ -6,10 +6,9 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true },
   isAdmin: { type: Boolean, default: false },
   
-  // NEW: Store user interests
-  interests: { type: [String], default: [] }, 
+  // NEW: Mobile Number (Optional)
+  mobile: { type: String, default: "" }, 
 
-  // AI TRAINING
   searchHistory: [
     {
       productId: { type: String },

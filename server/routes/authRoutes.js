@@ -54,7 +54,12 @@ router.post('/signup-verify', async (req, res) => {
     if (!validOtp) return res.status(400).json("Invalid or Expired OTP");
 
     // Create User
-    const newUser = new User({ username, email, password });
+    const newUser = new User({ 
+      username,
+      email,
+      password,
+      mobile:mobile || ""
+    });
     const user = await newUser.save();
 
     // Delete used OTP
