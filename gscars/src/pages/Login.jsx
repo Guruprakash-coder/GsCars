@@ -13,14 +13,16 @@ const Login = () => {
   
   // --- FORGOT PASSWORD STATES ---
   const [view, setView] = useState("login"); // "login" or "forgot"
-  const [resetStep, setResetStep] = useState(1); // 1 = Email, 2 = OTP & New Pass
+  const [resetStep, setResetStep] = useState(1); // 1 = Email, 2 = Verify
   const [resetEmail, setResetEmail] = useState('');
   const [resetOtp, setResetOtp] = useState('');
   const [newPass, setNewPass] = useState('');
+  const [confirmPass, setConfirmPass] = useState(''); // <--- CONFIRMATION STATE
   const [resetMsg, setResetMsg] = useState('');
   const [loading, setLoading] = useState(false);
 
   // 1. CHECK IF ALREADY LOGGED IN
+  // If user is already saved, send them straight to Profile
   useEffect(() => {
     const user = localStorage.getItem("user");
     if (user) {
@@ -35,6 +37,8 @@ const Login = () => {
     
     try {
       const res = await axios.post(`${baseUrl}/api/auth/login`, { email, password });
+      
+      // Save User & Redirect
       localStorage.setItem("user", JSON.stringify(res.data));
       navigate("/profile"); 
     } catch (err) {
@@ -49,7 +53,7 @@ const Login = () => {
     setResetMsg("");
     
     try {
-      // Re-using the route we made for Profile
+      // Calls the Brevo Email Route
       await axios.post(`${baseUrl}/api/auth/pass-reset-init`, { email: resetEmail });
       setResetStep(2);
       setResetMsg("✅ OTP Sent! Check your email.");
@@ -60,21 +64,34 @@ const Login = () => {
     }
   };
 
-  // --- HANDLER: VERIFY & RESET ---
+  // --- HANDLER: VERIFY & RESET PASSWORD ---
   const handleResetPass = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setResetMsg("");
 
+    // 1. Check if passwords match
+    if (newPass !== confirmPass) {
+      setResetMsg("❌ Passwords do not match!");
+      return;
+    }
+
+    setLoading(true);
     try {
+      // 2. Send to Backend
       await axios.post(`${baseUrl}/api/auth/pass-reset-verify`, {
         email: resetEmail,
         otp: resetOtp,
         newPassword: newPass
       });
+
       alert("✅ Password Reset Successfully! Please Login.");
-      setView("login"); // Go back to login screen
-      setResetStep(1);  // Reset form
+      
+      // 3. Reset View to Login
+      setView("login");
+      setResetStep(1);
+      setNewPass("");
+      setConfirmPass("");
+      setResetOtp("");
     } catch (err) {
       setResetMsg("❌ Invalid OTP or Error.");
     } finally {
@@ -100,6 +117,8 @@ const Login = () => {
         {/* --- VIEW 1: LOGIN FORM --- */}
         {view === "login" && (
           <form onSubmit={handleLogin} className="space-y-6 animate-fade-in-down">
+            
+            {/* Email */}
             <div>
               <label className="text-gray-400 text-sm mb-1 block">Email Address</label>
               <input 
@@ -107,10 +126,12 @@ const Login = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full bg-slate-900 text-white p-3 rounded border border-slate-600 focus:border-blue-500 outline-none"
+                placeholder="you@example.com"
                 required
               />
             </div>
 
+            {/* Password */}
             <div>
               <label className="text-gray-400 text-sm mb-1 block">Password</label>
               <input 
@@ -118,11 +139,12 @@ const Login = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full bg-slate-900 text-white p-3 rounded border border-slate-600 focus:border-red-600 outline-none"
+                placeholder="••••••••"
                 required
               />
             </div>
 
-            {/* FORGOT PASSWORD LINK */}
+            {/* Forgot Password Toggle */}
             <div className="text-right">
               <button 
                 type="button" 
@@ -133,7 +155,11 @@ const Login = () => {
               </button>
             </div>
 
-            {error && <div className="text-red-500 text-sm text-center font-bold animate-pulse">{error}</div>}
+            {error && (
+              <div className="text-red-500 text-sm text-center font-bold animate-pulse">
+                {error}
+              </div>
+            )}
 
             <button 
               type="submit" 
@@ -147,6 +173,7 @@ const Login = () => {
         {/* --- VIEW 2: FORGOT PASSWORD FORM --- */}
         {view === "forgot" && (
           <div className="animate-fade-in-up">
+            
             {resetStep === 1 ? (
               // STEP 1: ENTER EMAIL
               <form onSubmit={handleSendOtp} className="space-y-6">
@@ -164,6 +191,7 @@ const Login = () => {
                     required
                   />
                 </div>
+                
                 {resetMsg && <div className="text-center font-bold text-red-400">{resetMsg}</div>}
                 
                 <button 
@@ -175,11 +203,13 @@ const Login = () => {
                 </button>
               </form>
             ) : (
-              // STEP 2: VERIFY & NEW PASS
+              // STEP 2: VERIFY OTP & NEW PASSWORD
               <form onSubmit={handleResetPass} className="space-y-6">
                 <p className="text-gray-300 text-sm text-center mb-4">
                   Code sent to <strong>{resetEmail}</strong>
                 </p>
+                
+                {/* OTP Input */}
                 <div>
                   <label className="text-gray-400 text-sm mb-1 block">OTP Code</label>
                   <input 
@@ -192,6 +222,8 @@ const Login = () => {
                     required
                   />
                 </div>
+                
+                {/* New Password */}
                 <div>
                   <label className="text-gray-400 text-sm mb-1 block">New Password</label>
                   <input 
@@ -203,7 +235,29 @@ const Login = () => {
                     required
                   />
                 </div>
-                {resetMsg && <div className="text-center font-bold text-red-400">{resetMsg}</div>}
+
+                {/* Confirm Password */}
+                <div>
+                  <label className="text-gray-400 text-sm mb-1 block">Confirm Password</label>
+                  <input 
+                    type="password" 
+                    value={confirmPass} 
+                    onChange={(e) => setConfirmPass(e.target.value)} 
+                    className={`w-full bg-slate-900 text-white p-3 rounded border outline-none ${
+                      newPass && confirmPass && newPass !== confirmPass 
+                        ? 'border-red-500 focus:border-red-500' 
+                        : 'border-slate-600 focus:border-green-500'
+                    }`}
+                    placeholder="Re-enter Password" 
+                    required 
+                  />
+                </div>
+
+                {resetMsg && (
+                  <div className={`text-center font-bold mb-2 ${resetMsg.includes('✅') ? 'text-green-400' : 'text-red-400'}`}>
+                    {resetMsg}
+                  </div>
+                )}
 
                 <button 
                   type="submit" 
@@ -217,7 +271,13 @@ const Login = () => {
 
             {/* BACK BUTTON */}
             <button 
-              onClick={() => { setView("login"); setResetStep(1); setResetMsg(""); }}
+              onClick={() => { 
+                setView("login"); 
+                setResetStep(1); 
+                setResetMsg(""); 
+                setNewPass(""); 
+                setConfirmPass(""); 
+              }} 
               className="w-full text-center text-gray-500 text-sm mt-6 hover:text-white transition"
             >
               Cancel & Go Back
@@ -225,7 +285,7 @@ const Login = () => {
           </div>
         )}
 
-        {/* SIGN UP LINK (Always Visible in Login View) */}
+        {/* SIGN UP LINK (Only visible in Login view) */}
         {view === "login" && (
           <div className="mt-6 text-center text-gray-500 text-xs">
             Don't have an account? <Link to="/signup" className="text-blue-400 hover:underline">Sign up here</Link>
