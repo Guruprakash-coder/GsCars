@@ -10,7 +10,7 @@ const productSchema = new mongoose.Schema({
   // CHANGED: Now an array of strings
   images: { type: [String], required: true }, 
   
-  compatibility: { type: String, enum: ['Universal', 'Specific'], default: 'Universal' },
+  compatibility: { type: String, enum: ['Universal', 'Specific','Five Seater','Seven seater','Luxury(5 seater)','Luxury(7 Seater)'], default: 'Universal' },
   compatibleCars: { type: [String], default: [] },
   isFeatured: { type: Boolean, default: false }
 });
