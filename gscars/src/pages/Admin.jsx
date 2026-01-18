@@ -156,6 +156,10 @@ const Admin = () => {
                <div className="flex items-center space-x-6 mb-4">
                 <label className="flex items-center text-gray-400"><input type="radio" name="compatibility" value="Universal" checked={formData.compatibility === 'Universal'} onChange={handleChange} className="mr-2"/> Universal</label>
                 <label className="flex items-center text-gray-400"><input type="radio" name="compatibility" value="Specific" checked={formData.compatibility === 'Specific'} onChange={handleChange} className="mr-2"/> Specific Car</label>
+                <label className="flex items-center text-gray-400"><input type="radio" name="compatibility" value="Five seater" checked={formData.compatibility === 'Five seater'} onChange={handleChange} className="mr-2"/> Five seater</label>
+                <label className="flex items-center text-gray-400"><input type="radio" name="compatibility" value="Seven seater" checked={formData.compatibility === 'Seven seater'} onChange={handleChange} className="mr-2"/> Seven seater</label>
+                <label className="flex items-center text-gray-400"><input type="radio" name="compatibility" value="Luxury(5 seater)" checked={formData.compatibility === 'Luxury(5 seater)'} onChange={handleChange} className="mr-2"/> Luxury(5 seater)</label>
+                <label className="flex items-center text-gray-400"><input type="radio" name="compatibility" value="Luxury(7 seater)" checked={formData.compatibility === 'Luxury(7 seater)'} onChange={handleChange} className="mr-2"/> Luxury(7 seater)</label>
                </div>
                {formData.compatibility === 'Specific' && <input type="text" name="compatibleCars" value={formData.compatibleCars} onChange={handleChange} className="w-full bg-slate-900 text-white p-3 rounded border border-slate-600" placeholder="Swift, City..."/>}
             </div>
