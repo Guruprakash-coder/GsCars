@@ -47,7 +47,7 @@ router.post('/signup-init', async (req, res) => {
 // 2. COMPLETE SIGNUP (Verify OTP & Create User)
 router.post('/signup-verify', async (req, res) => {
   try {
-    const { username, email, password, otp } = req.body;
+    const { username, email, password, otp, mobile } = req.body;
 
     // Check OTP
     const validOtp = await OTP.findOne({ email, otp });
