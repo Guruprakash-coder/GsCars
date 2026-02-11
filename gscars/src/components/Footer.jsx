@@ -73,7 +73,7 @@ const Footer = () => {
               </li>
               <li className="flex items-center space-x-3">
                 <span className="text-green-500">✉️</span>
-                <a href="mailto:contact@gscars.com" className="hover:text-white">contact@gscars.com</a>
+                <a href="mailto:contact@gssenthil6999@gmail.com" className="hover:text-white">contact@gscars.com</a>
               </li>
             </ul>
           </div>
